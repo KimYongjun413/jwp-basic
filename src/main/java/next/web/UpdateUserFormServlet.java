@@ -29,4 +29,21 @@ public class UpdateUserFormServlet extends HttpServlet {
         RequestDispatcher rd = req.getRequestDispatcher("/user/updateForm.jsp");
         rd.forward(req,resp);
     }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        User user = DataBase.findUserById(req.getParameter("userId"));
+        if (!UserSessionUtils.isSameUser(req.getSession(), user)) {
+            throw new IllegalStateException("다른 사용자의 정보를 수정할 수 없습니다.");
+        }
+
+        User updateUser = new User(
+                req.getParameter("userId"),
+                req.getParameter("password"),
+                req.getParameter("name"),
+                req.getParameter("email"));
+        log.debug("Update User : {}", updateUser);
+        user.update(updateUser);
+        resp.sendRedirect("/");
+    }
 }
